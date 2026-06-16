@@ -1,0 +1,1323 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ÖNCESİNDE — TERMİNAL NASIL AÇILIR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bu kurulum boyunca "terminale şunu yazın" diyeceğim. Terminal, bilgisayara
+yazılı komutlar verdiğimiz siyah veya beyaz ekranlı bir penceredir.
+
+Windows'ta terminal açmak:
+  Yöntem 1 (En kolay):
+    Windows tuşuna bas → arama kutusuna "cmd" yaz → "Komut İstemi"ne tıkla
+  Yöntem 2:
+    Windows + R tuşlarına aynı anda bas → "cmd" yaz → Enter'a bas
+  Yöntem 3 (PowerShell):
+    Windows tuşuna bas → "PowerShell" yaz → tıkla
+    (PowerShell veya Komut İstemi — ikisi de çalışır)
+
+Mac'te terminal açmak:
+  Yöntem 1:
+    Command + Boşluk → "Terminal" yaz → Enter
+  Yöntem 2:
+    Uygulamalar → Araçlar → Terminal
+
+Terminal açıldıktan sonra:
+  - Bir komut yazın, Enter'a basın, sonucu bekleyin
+  - Hata mesajı çıkarsa tüm çıktıyı kopyalayıp bana yapıştırın
+  - Terminali kapatmayın, kurulum boyunca açık tutun
+
+Sen kişisel yatırım analiz sistemi kurmama yardım eden bir kurulum asistanısın.
+
+Bu sistem kurulduğunda:
+- 1000+ finansal enstrümanı (BIST, S&P500, Kripto, Emtia) tarar
+- EMA, MACD, ADX, Bollinger Bands, OBV, Candlestick indikatörlerini hesaplar
+- Puanlama ile enstrümanları güçlü, orta güçlü puan kategorilerine ayırır (max 17 puan)
+- Claude AI ile swing trade analizi ve güncel haber özeti üretir
+- Sabah/akşam HTML e-posta raporu gönderir
+- Sinyal veritabanıyla performans takibi yapar
+
+TÜM DOSYALARI SEN OLUŞTURACAKSIN. GitHub veya harici kaynak kullanmayacağız. Her adımın nasıl yapılacağını detaylı bir şekilde tarif etmeni istiyorum.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 1 — SİSTEM KONTROLÜ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Önce şu soruları sor, cevapları bekle:
+
+1. "Hangi işletim sistemini kullanıyorsunuz? (Windows 10/11 / Mac / Linux)"
+2. "Terminali açın (yukarıdaki ÖNCESİNDE bölümüne bakın) ve şunu yazıp Enter'a basın:
+   python --version
+   Çıktıda hangi sürüm yazıyor? Örnek: Python 3.12.3"
+3. "Aynı terminalde şunu yazıp Enter'a basın:
+   node --version
+   Bir sürüm numarası çıkıyorsa (örn: v20.11.0) Node.js kurulu demektir.
+   'node' tanınmıyor hatası alırsanız Node.js kurulu değildir."
+4. "Anthropic API key'iniz var mı? (console.anthropic.com → Settings → API Keys)"
+5. "Gmail hesabınız ve 2 adımlı doğrulamanız var mı?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 2 — KİŞİSELLEŞTİRME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sistem kurulmadan önce şu tercihleri sor.
+KULLANICININ CEVAPLARI TÜM KURULUM BOYUNCA TUTARLI KULLANILACAK.
+
+SORU A: "Hangi piyasaları taramak istiyorsunuz?"
+  1. Hepsi (BIST + S&P500 + Kripto + Emtia) 
+  2. Sadece BIST + Kripto 
+  3. Sadece S&P500 + Kripto 
+  4. Özel liste belirleyeceğim
+
+SORU B: "Yatırım yaklaşımınız?"
+  A. Agresif — daha fazla sinyal: MIN_SCORE=6, MAX_INSTRUMENTS=15
+  B. Dengeli  — orta seviye:    MIN_SCORE=8, MAX_INSTRUMENTS=10
+  C. Seçici   — az ama güçlü:  MIN_SCORE=10, MAX_INSTRUMENTS=5
+
+SORU C: "Raporları hangi saatlerde almak istiyorsunuz?"
+  Sabah taraması: (varsayılan 08:00)
+  Akşam taraması: (varsayılan 19:00)
+
+NOT: Skor sistemi 17 puan üzerindendir.
+  - Güçlü sinyal: 9+ puan
+  - Orta sinyal: 6-8 puan
+  - Claude'a gidecek minimum: kullanıcının SORU B tercihi (6/8/10)
+  - Claude'a gidecek maksimum enstrüman: kullanıcının SORU B tercihi (15/10/5)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 3 — YAZILIM KURULUMU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Python 3.12 yoksa kur:
+  Windows: python.org/downloads → Python 3.12 → "Add PATH" seç
+  Mac: brew install python@3.12
+
+Python kütüphanelerini kur:
+  Terminali açın (hâlâ açıksa kullanmaya devam edin) ve şu komutu yazıp Enter'a basın:
+
+  pip install anthropic pandas pandas-ta requests
+
+  Birkaç dakika sürebilir. "Successfully installed" yazısını görünce tamamdır.
+
+TA-Lib kurulumu (mum formasyonları için):
+  Windows:
+    1. github.com/cgohlke/talib-build/releases adresine git
+    2. ta_lib-0.6.8-cp312-cp312-win_amd64.whl dosyasını indir
+    3. pip install C:\\Users\\KULLANICI\\Downloads\\ta_lib-0.6.8-cp312-cp312-win_amd64.whl
+  Mac: pip install TA-Lib  (önce: brew install ta-lib)
+
+n8n kurulumu (e-posta için):
+  npm install -g n8n
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 3b — n8n WORKFLOW KURULUMU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+n8n kurulduktan sonra workflow'u kurmak için şu adımları uygula.
+Her adımı kullanıcıya söyle ve tamamlandığını doğrula.
+
+ÖNEMLİ — n8n'de sorun yaşarsanız:
+  Her adımda takılırsanız veya tarif ettiğim yeri bulamazsanız,
+  n8n ekranının görüntüsünü (screenshot) alıp bana gönderin.
+  Windows'ta ekran görüntüsü almak için: Windows + Shift + S tuşlarına
+  aynı anda basın, sonra ilgili alanı seçin.
+  Mac'te: Command + Shift + 4 tuşlarına aynı anda basın.
+
+1. n8n'i başlat:
+   ÖNEMLİ: Bu adım için ayrı bir terminal açın — bu terminal kurulum boyunca açık kalacak.
+   (Mevcut terminali kapatmadan yeni bir tane açın — yukarıdaki ÖNCESİNDE bölümüne bakın)
+   
+   Yeni terminale şunu yazıp Enter'a basın:
+     n8n start
+   
+   "Editor is now accessible via:" yazısı çıktığında n8n hazır demektir.
+
+   Tarayıcıda http://localhost:5678 aç.
+   İlk açılışta hesap oluşturma ekranı gelir.
+   E-posta, şifre belirle ve devam et.
+
+2. Yeni Workflow oluştur:
+   Sol üst köşe → "New Workflow" tıkla
+   Workflow adı: "Trade Report"
+
+3. Webhook node ekle:
+   Ortadaki + ikonuna tıkla → arama kutusuna "Webhook" yaz → seç
+   (+ ikonu ekranın tam ortasında, büyük bir artı işareti)
+   Node ayarları:
+     HTTP Method: POST
+     Path: trade-report
+     Response Mode: "Immediately"
+   "Save" tıkla.
+   Bu adımda takılırsanız n8n ekranının görüntüsünü bana gönderin.
+   
+   "Webhook URLs" bölümünde şunu göreceksin:
+     Test URL:       http://localhost:5678/webhook-test/trade-report
+     Production URL: http://localhost:5678/webhook/trade-report
+   
+   ÖNEMLİ: Workflow aktif edilince Production URL kullanılır.
+   Python scripti zaten bu URL'e gönderiyor: /webhook/trade-report
+
+4. Gmail SMTP node ekle:
+   Webhook node'un sağındaki + ikonuna tıkla
+   (Webhook kutusunun sağ kenarında küçük bir daire veya ok var, ona tıklayın)
+   Arama kutusuna "Send Email" yaz → "Send Email" seç (n8n built-in)
+   Bu adımda takılırsanız ekran görüntüsü gönderin.
+   
+   Node ayarları:
+     From Email: {{$json.body.subject}} → SİL, sabit yaz: senin@gmail.com
+     From Email: senin@gmail.com
+     To Email:   senin@gmail.com
+     Subject:    ← Bu satıra tıkla → Expression seç → şunu yaz:
+                 {{$json.body.subject}}
+     Email Type: HTML
+     HTML:       ← Bu satıra tıkla → Expression seç → şunu yaz:
+                 {{$json.body.html}}
+
+5. Gmail SMTP credential ekle:
+   Send Email node içinde "Credential for SMTP" → "Create new credential" tıkla
+   (Node'un içinde, aşağılara kaydırın — "Credentials" veya "SMTP" yazan bölümü bulun)
+   Bu adımda takılırsanız ekran görüntüsü gönderin.
+   
+   Credential ayarları:
+     Credential Name: Gmail Trade Analyst
+     SMTP Host:       smtp.gmail.com
+     SMTP Port:       465
+     Secure:          AÇIK (toggle)
+     User:            senin@gmail.com
+     Password:        Gmail App Password (16 haneli, normalde 4'erli gruplar)
+   
+   "Save" tıkla. "Test Connection" ile bağlantıyı doğrula — "Connection tested successfully" çıkmalı.
+
+6. Node'ları bağla:
+   Webhook node'un sağındaki çıkış noktasından (küçük daire) fareyi basılı tutarak
+   Send Email node'unun üzerine sürükleyin, bırakın.
+   İki node arasında bir ok çizgisi oluşmalı.
+   Bağlantı oluşmadıysa ekran görüntüsü gönderin.
+
+7. Workflow'u kaydet ve aktif et:
+   Sağ üst köşe → "Save" tıkla
+   Sonra "Active" toggle'ını AÇ (gri → yeşil)
+   
+   "Workflow activated" mesajı çıkmalı.
+   Artık Production URL aktif: http://localhost:5678/webhook/trade-report
+
+8. Test et:
+   Python scriptini çalıştır:
+     python scripts/analyze_and_report.py --session morning
+   
+   Terminalde "Webhook yaniti: 200 - E-posta gonderildi!" çıkmalı.
+   n8n arayüzünde sol menü → "Executions" → en son execution'ı gör.
+   Yeşil ise başarılı, kırmızı ise hangi node'da hata var göreceksin.
+
+ÖNEMLI NOT — n8n Her Zaman Açık Olmalı:
+  n8n'i her bilgisayar açılışında otomatik başlatmak için:
+  
+  Windows (Görev Zamanlayıcı):
+    Görev Zamanlayıcı → Temel Görev Oluştur → "n8n autostart"
+    Tetikleyici: Oturum açıldığında
+    Eylem: Program başlat → cmd.exe
+    Bağımsız değişken: /c "n8n start"
+  
+  Mac/Linux (crontab):
+    crontab -e → şunu ekle:
+    @reboot /usr/local/bin/n8n start >> ~/n8n.log 2>&1
+
+  ALTERNATIF — n8n olmadan (direkt SMTP):
+    n8n açık değilse sistem otomatik olarak Gmail SMTP ile
+    doğrudan gönderim yapar. GMAIL_USER ve GMAIL_PASS ortam
+    değişkenleri tanımlıysa bu her zaman çalışır.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 4 — KLASÖR YAPISI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kullanıcının işletim sistemine göre şu komutları ver.
+Her komutu terminale ayrı ayrı yazıp Enter'a basın:
+
+Windows:
+  md C:\\Users\\%USERNAME%\\trade-analyst\\scripts
+  md C:\\Users\\%USERNAME%\\trade-analyst\\config
+  md C:\\Users\\%USERNAME%\\trade-analyst\\logs
+  md C:\\Users\\%USERNAME%\\trade-analyst-output
+
+Mac/Linux:
+  mkdir -p ~/trade-analyst/{scripts,config,logs}
+  mkdir -p ~/trade-analyst-output
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 5 — API ANAHTARLARI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Gmail App Password alma:
+  1. myaccount.google.com → Güvenlik → 2 Adımlı Doğrulama AÇ
+  2. Arama kutusuna "Uygulama şifreleri" yaz
+  3. "Trade Analyst" adıyla 16 haneli şifre oluştur
+
+Ortam değişkenleri — KULLANICIDAN BU BİLGİLERİ İSTE:
+  - ANTHROPIC_API_KEY (console.anthropic.com'dan)
+  - GMAIL_USER (gmail adresi)
+  - GMAIL_PASS (16 haneli app password)
+
+Windows ayarı (Adım adım):
+  1. Windows tuşuna bas
+  2. Arama kutusuna "ortam değişkenleri" yaz
+  3. "Sistem ortam değişkenlerini düzenle" seçeneğine tıkla
+  4. Açılan pencerede "Ortam Değişkenleri" düğmesine tıkla
+  5. Alt kısımdaki "Sistem değişkenleri" bölümünde "Yeni" düğmesine tıkla
+  6. "Değişken adı" kutusuna: ANTHROPIC_API_KEY
+     "Değişken değeri" kutusuna: sk-ant-... (kendi API key'iniz)
+     Tamam tıkla
+  7. Tekrar "Yeni" tıkla:
+     "Değişken adı" kutusuna: GMAIL_USER
+     "Değişken değeri" kutusuna: sizin@gmail.com
+     Tamam tıkla
+  8. Tekrar "Yeni" tıkla:
+     "Değişken adı" kutusuna: GMAIL_PASS
+     "Değişken değeri" kutusuna: 16 haneli app password (boşluklarla birlikte)
+     Tamam tıkla
+  9. Tüm pencereleri Tamam ile kapat
+  10. ÖNEMLİ — Terminali kapatıp yeniden açın:
+      Açık tüm terminal pencerelerini kapatın.
+      Yeni bir terminal açın (nasıl açılacağını bilmiyorsanız dosyanın başındaki
+      "TERMİNAL NASIL AÇILIR?" bölümüne bakın).
+      Terminali kapatıp yeniden açmadan değişkenler geçerli olmaz.
+
+  11. Değişkenlerin doğru kaydedildiğini kontrol et — terminale sırayla yaz:
+      echo %ANTHROPIC_API_KEY%
+      echo %GMAIL_USER%
+      echo %GMAIL_PASS%
+
+      Her birinin ardından değer görünmeli (yıldız değil, gerçek değer).
+      Eğer "ANTHROPIC_API_KEY" yazısı çıkıyorsa (değer değil, isim),
+      terminali kapatıp yeniden aç ve tekrar dene.
+
+Mac/Linux (~/.zshrc veya ~/.bash_profile):
+  export ANTHROPIC_API_KEY="sk-ant-..."
+  export GMAIL_USER="ornek@gmail.com"
+  export GMAIL_PASS="xxxx xxxx xxxx xxxx"
+  Sonra: source ~/.zshrc
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 6 — DOSYALARI OLUŞTUR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Şimdi 4 dosya oluşturacaksın. Her birini sırayla yaz ve kaydetme
+talimatlarını net şekilde ver. Devam etmeden önce dosyanın doğru
+kaydedildiğini doğrula.
+
+DOSYA KAYDETME — GENEL KURALLAR (her dosyadan önce hatırlat):
+
+  Dosya adı konusunda dikkat edilecekler:
+  - Dosya adını TAM olarak verilen isimle kaydet (büyük/küçük harf önemli)
+  - Windows'ta Notepad "Farklı Kaydet" yaparken "Kayıt türü" açılır
+    menüsünü "Tüm dosyalar (*.*)" olarak değiştir
+    Aksi halde "fetch_data.py.txt" gibi yanlış kaydeder — sistem çalışmaz
+  - Dosya adının sonunda .py uzantısı olmalı, .txt olmamalı
+  
+  Doğru konum:
+  Windows: C:\Users\[KULLANICI_ADINIZ]\trade-analyst\scripts\
+  Mac:     ~/trade-analyst/scripts/
+  
+  Kaydetme yöntemi (Windows için önerilen):
+  Terminali aç → trade-analyst klasörüne git → şu komutu çalıştır:
+    notepad scripts\[DOSYA_ADI].py
+  Bu komut Notepad'i doğru klasörde, doğru isimle açar.
+  İçeriği yapıştır → Dosya → Kaydet (Ctrl+S)
+  
+  Mac için:
+    open -a TextEdit scripts/[dosya_adi].py
+  veya doğrudan terminalde oluştur.
+
+Kullanıcının SORU B tercihine göre şu değerleri kullan:
+  Agresif: MIN_SCORE_FOR_CLAUDE=6, MAX_INSTRUMENTS=15
+  Dengeli:  MIN_SCORE_FOR_CLAUDE=8, MAX_INSTRUMENTS=10
+  Seçici:   MIN_SCORE_FOR_CLAUDE=10, MAX_INSTRUMENTS=5
+
+─── DOSYA 1: config/instruments.json ───────────────────────────────────────
+
+Bu dosyayı kullanıcı ayrıca paylaşacak. Kullanıcıdan instruments.json
+dosyasını aldıktan sonra şu konuma kopyalamasını söyle:
+
+Windows: C:\\Users\\KULLANICI\\trade-analyst\\config\\instruments.json
+Mac/Linux: ~/trade-analyst/config/instruments.json
+
+Dosyayı aldıktan sonra içeriğini kontrol et:
+  python -c "import json; d=json.load(open('config/instruments.json')); print('BIST:', len(d.get('stocks',{}).get('bist',[])), 'sembol')"
+
+─── DOSYA 2: scripts/fetch_data.py ─────────────────────────────────────────
+
+DOSYA ADI: fetch_data.py
+KONUM: trade-analyst/scripts/ klasörü içine
+TAM YOL (Windows): C:\Users\[KULLANICI_ADINIZ]\trade-analyst\scripts\fetch_data.py
+
+Kaydetmeden önce kullanıcıya söyle:
+"Şimdi fetch_data.py dosyasını oluşturacağım. Windows'ta terminale şunu yazın:
+  notepad scripts\fetch_data.py
+Notepad açıldığında aşağıdaki kodu yapıştırın, sonra Ctrl+S ile kaydedin."
+
+Bu dosyayı tam ve eksiksiz yaz. İçeriği:
+
+"""
+Trade Analyst - Veri Çekme & İndikatör Hesaplama
+600+ enstrüman tarar, 17 puanlık skor sistemi uygular.
+Kullanım: python fetch_data.py --session morning
+"""
+import json, time, argparse, os, sys, requests
+import pandas as pd
+import pandas_ta as ta
+from datetime import datetime, timezone
+from typing import Optional
+
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
+OUTPUT_DIR = os.path.join(os.path.expanduser("~"), "trade-analyst-output")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "../config/instruments.json")
+with open(CONFIG_PATH, encoding="utf-8") as f:
+    INSTRUMENTS = json.load(f)
+
+STABLECOINS = {
+    "USDCUSDT","USD1USDT","FDUSDUSDT","UUSDT","XUSDUSDT","RLUSDUSDT",
+    "PAXGUSDT","XAUTUSDT","EURUSDT","TUSDUSDT","BUSDUSDT","DAIUSDT"
+}
+
+# ── Sembol listeleri ──────────────────────────────────────────────────────────
+
+def get_top50_crypto():
+    try:
+        r = requests.get("https://api.binance.com/api/v3/ticker/24hr", timeout=15)
+        tickers = [t for t in r.json()
+                   if t["symbol"].endswith("USDT")
+                   and t["symbol"] not in STABLECOINS
+                   and not any(x in t["symbol"] for x in ["UP","DOWN","BULL","BEAR"])]
+        tickers.sort(key=lambda x: float(x["quoteVolume"]), reverse=True)
+        syms = [t["symbol"] for t in tickers[:50]]
+        print(f"  Kripto: {len(syms)} sembol çekildi")
+        return syms
+    except Exception as e:
+        print(f"  [UYARI] Kripto listesi alınamadı: {e}")
+        return []
+
+def get_sp500_symbols():
+    import urllib.request, csv, io
+    for url in [
+        "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
+        "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv",
+    ]:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "TradeBot/1.0"})
+            resp = urllib.request.urlopen(req, timeout=20)
+            reader = csv.DictReader(io.StringIO(resp.read().decode("utf-8")))
+            syms = [row.get("Symbol","").strip() for row in reader if row.get("Symbol")]
+            syms = [s for s in syms if 1 < len(s) <= 5]
+            if len(syms) > 50:
+                print(f"  S&P 500: {len(syms)} sembol çekildi")
+                return syms
+        except Exception as e:
+            print(f"  [UYARI] S&P 500 kaynağı başarısız: {e}")
+    return []
+
+def get_bist_symbols():
+    return INSTRUMENTS.get("stocks", {}).get("bist", [])
+
+# ── Veri çekme ───────────────────────────────────────────────────────────────
+
+def fetch_binance(symbol, interval="4h", limit=250):
+    try:
+        r = requests.get("https://api.binance.com/api/v3/klines",
+                         params={"symbol": symbol, "interval": interval, "limit": limit},
+                         timeout=10)
+        r.raise_for_status()
+        df = pd.DataFrame(r.json(), columns=[
+            "ts","open","high","low","close","volume","ct","qv","t","tb","tq","i"
+        ])[["ts","open","high","low","close","volume"]]
+        df.columns = ["timestamp","open","high","low","close","volume"]
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+        for c in ["open","high","low","close","volume"]:
+            df[c] = pd.to_numeric(df[c])
+        return df.reset_index(drop=True)
+    except Exception as e:
+        return None
+
+def fetch_yahoo(symbol, interval="1d", period_days=400):
+    import urllib.request, urllib.parse, json as _j, time as _t
+    end, start = int(_t.time()), int(_t.time()) - period_days * 86400
+    url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol)}"
+           f"?interval={interval}&period1={start}&period2={end}")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        data = _j.loads(urllib.request.urlopen(req, timeout=15).read())
+        r = data["chart"]["result"][0]
+        q = r["indicators"]["quote"][0]
+        df = pd.DataFrame({
+            "timestamp": pd.to_datetime(r["timestamp"], unit="s"),
+            "open": q["open"], "high": q["high"],
+            "low": q["low"], "close": q["close"], "volume": q["volume"]
+        }).dropna().reset_index(drop=True)
+        return df
+    except Exception as e:
+        return None
+
+# ── İndikatörler ─────────────────────────────────────────────────────────────
+
+def calculate_indicators(df):
+    if df is None or len(df) < 30:
+        return None
+    close, high, low, volume, open_ = df["close"], df["high"], df["low"], df["volume"], df["open"]
+    r = {}
+
+    # RSI (analiz için — skorlamada yok)
+    rsi = ta.rsi(close, length=14)
+    r["rsi"] = round(float(rsi.iloc[-1]), 2) if rsi is not None else None
+
+    # MACD ve kesişim tespiti
+    macd_df = ta.macd(close, fast=12, slow=26, signal=9)
+    if macd_df is not None:
+        mc = [c for c in macd_df.columns if c.startswith("MACD_")][0]
+        sc = [c for c in macd_df.columns if c.startswith("MACDs_")][0]
+        hc = [c for c in macd_df.columns if c.startswith("MACDh_")][0]
+        r["macd"], r["macd_signal"], r["macd_hist"] = (
+            round(float(macd_df[mc].iloc[-1]),4),
+            round(float(macd_df[sc].iloc[-1]),4),
+            round(float(macd_df[hc].iloc[-1]),4))
+        pm, ps = float(macd_df[mc].iloc[-2]), float(macd_df[sc].iloc[-2])
+        cm, cs = r["macd"], r["macd_signal"]
+        r["macd_cross"] = ("bullish_cross" if pm<ps and cm>cs
+                      else "bearish_cross" if pm>ps and cm<cs
+                      else "bullish" if cm>cs else "bearish")
+
+    # EMA'lar ve trend
+    for p in [20, 50, 200]:
+        e = ta.ema(close, length=p)
+        if e is not None: r[f"ema{p}"] = round(float(e.iloc[-1]),4)
+    if all(f"ema{p}" in r for p in [20,50,200]):
+        e20,e50,e200,px = r["ema20"],r["ema50"],r["ema200"],float(close.iloc[-1])
+        r["ema_trend"] = ("guclu_yukselis" if e20>e50>e200 and px>e20
+                     else "zayif_yukselis" if e20>e50
+                     else "guclu_dusus" if e20<e50<e200 and px<e20
+                     else "zayif_dusus")
+
+    # ADX
+    try:
+        adx_df = ta.adx(high, low, close, length=14)
+        if adx_df is not None:
+            ac = [c for c in adx_df.columns if c.startswith("ADX_")][0]
+            dp = [c for c in adx_df.columns if c.startswith("DMP_")][0]
+            dn = [c for c in adx_df.columns if c.startswith("DMN_")][0]
+            av = round(float(adx_df[ac].iloc[-1]),2)
+            dv,nv = float(adx_df[dp].iloc[-1]),float(adx_df[dn].iloc[-1])
+            r["adx"] = av
+            r["adx_trend"] = ("guclu_yukselis" if av>25 and dv>nv
+                          else "guclu_dusus" if av>25 and nv>dv else "yatay")
+    except: pass
+
+    # Bollinger Bands + Squeeze
+    bb = ta.bbands(close, length=20, std=2)
+    if bb is not None:
+        uc=[c for c in bb.columns if c.startswith("BBU")][0]
+        mc=[c for c in bb.columns if c.startswith("BBM")][0]
+        lc=[c for c in bb.columns if c.startswith("BBL")][0]
+        r["bb_upper"],r["bb_mid"],r["bb_lower"] = (
+            round(float(bb[uc].iloc[-1]),4),
+            round(float(bb[mc].iloc[-1]),4),
+            round(float(bb[lc].iloc[-1]),4))
+        r["bb_width"] = round((r["bb_upper"]-r["bb_lower"])/r["bb_mid"]*100,2) if r["bb_mid"] else 0
+        if len(close)>=50:
+            ws=[(float(bb[uc].iloc[i])-float(bb[lc].iloc[i]))/float(bb[mc].iloc[i])*100
+                for i in range(-50,0) if float(bb[mc].iloc[i])!=0]
+            if ws: r["bb_squeeze"] = r["bb_width"] <= sorted(ws)[int(len(ws)*0.2)]
+
+    # Hacim ve yön
+    vm = volume.rolling(20).mean().iloc[-1]
+    if vm and vm>0:
+        r["vol_ratio"] = round(float(volume.iloc[-1]/vm),2)
+        r["vol_directional"] = "up" if float(close.iloc[-1])>=float(open_.iloc[-1]) else "down"
+
+    # OBV divergence
+    obv = ta.obv(close, volume)
+    if obv is not None and len(obv)>=10:
+        pt = float(close.iloc[-1])-float(close.iloc[-10])
+        ot = float(obv.iloc[-1])-float(obv.iloc[-10])
+        r["obv_divergence"] = ("bearish" if pt>0 and ot<0
+                          else "bullish" if pt<0 and ot>0 else "none")
+
+    # Mum formasyonları
+    candles = {}
+    try:
+        for name in ["hammer","engulfing","doji","shootingstar","morningstar","eveningstar"]:
+            p = ta.cdl_pattern(open_, high, low, close, name=name)
+            if p is not None and p.iloc[-1]!=0:
+                candles[name] = int(p.iloc[-1])
+    except: pass
+    r["candle_patterns"] = candles
+
+    # ATR
+    atr = ta.atr(high, low, close, length=14)
+    if atr is not None: r["atr"] = round(float(atr.iloc[-1]),4)
+
+    # Fibonacci
+    fh,fl = float(high.tail(50).max()),float(low.tail(50).min())
+    if fh>fl:
+        r.update({"fib_high":round(fh,4),"fib_low":round(fl,4),
+                  "fib_618":round(fh-(fh-fl)*0.618,4),
+                  "fib_500":round(fh-(fh-fl)*0.500,4),
+                  "fib_382":round(fh-(fh-fl)*0.382,4)})
+
+    # Pivot
+    ph,pl,pc = float(high.iloc[-2]),float(low.iloc[-2]),float(close.iloc[-2])
+    pv = (ph+pl+pc)/3
+    r.update({"pivot":round(pv,4),"resist1":round(2*pv-pl,4),
+              "support1":round(2*pv-ph,4),"support2":round(pv-(ph-pl),4)})
+
+    r["price"] = round(float(close.iloc[-1]),6)
+    r["change_pct"] = round((r["price"]-float(close.iloc[-2]))/float(close.iloc[-2])*100,2)
+    return r
+
+# ── Skor hesaplama (max 17 puan) ─────────────────────────────────────────────
+
+def score_signal(ind, price, ind_weekly=None, ind_daily=None):
+    ls, ss = 0, 0
+    lr, sr = [], []
+
+    # TREND (max 4)
+    et = ind.get("ema_trend","")
+    if "yukselis" in et:
+        w=2 if "guclu" in et else 1; ls+=w; lr.append(f"EMA {et} (+{w})")
+    elif "dusus" in et:
+        w=2 if "guclu" in et else 1; ss+=w; sr.append(f"EMA {et} (+{w})")
+    at = ind.get("adx_trend","yatay"); av = ind.get("adx",0) or 0
+    if at=="guclu_yukselis": ls+=2; lr.append(f"ADX güçlü yükseliş {av:.0f} (+2)")
+    elif at=="guclu_dusus":  ss+=2; sr.append(f"ADX güçlü düşüş {av:.0f} (+2)")
+
+    # SİNYAL (max 4)
+    mc = ind.get("macd_cross","")
+    if mc=="bullish_cross":  ls+=2; lr.append("MACD tam kesişim yukarı (+2)")
+    elif mc=="bullish":      ls+=1; lr.append("MACD bullish (+1)")
+    elif mc=="bearish_cross":ss+=2; sr.append("MACD tam kesişim aşağı (+2)")
+    elif mc=="bearish":      ss+=1; sr.append("MACD bearish (+1)")
+    bc=[n for n,v in ind.get("candle_patterns",{}).items() if v>0]
+    brs=[n for n,v in ind.get("candle_patterns",{}).items() if v<0]
+    if bc:  ls+=2; lr.append(f"Bullish mum: {','.join(bc)} (+2)")
+    if brs: ss+=2; sr.append(f"Bearish mum: {','.join(brs)} (+2)")
+
+    # FİYAT (max 3)
+    bbl,bbu = ind.get("bb_lower"),ind.get("bb_upper")
+    if bbl and price<=bbl*1.005: ls+=1; lr.append("BB alt bandı (+1)")
+    if bbu and price>=bbu*0.995: ss+=1; sr.append("BB üst bandı (+1)")
+    if ind.get("bb_squeeze"):
+        ls+=2; ss+=2
+        lr.append("BB Squeeze (+2)"); sr.append("BB Squeeze (+2)")
+
+    # HACİM (max 3)
+    vr,vd = ind.get("vol_ratio",1) or 1, ind.get("vol_directional","")
+    if vr>=1.5:
+        pts=2 if vr>=2.5 else 1
+        if vd=="up":   ls+=pts; lr.append(f"Yükseliş hacmi {vr:.1f}x (+{pts})")
+        elif vd=="down":ss+=pts; sr.append(f"Düşüş hacmi {vr:.1f}x (+{pts})")
+    od = ind.get("obv_divergence","none")
+    if od=="bullish": ls+=1; lr.append("OBV bullish div (+1)")
+    elif od=="bearish":ss+=1; sr.append("OBV bearish div (+1)")
+
+    # MULTI-TIMEFRAME (max +2, min -2)
+    ml, ms = 0, 0
+    for lbl, ti in [("Haftalık",ind_weekly),("Günlük",ind_daily)]:
+        if not ti: continue
+        tl = "yukselis" in ti.get("ema_trend","") or "bullish" in ti.get("macd_cross","") or ti.get("adx_trend")=="guclu_yukselis"
+        td = "dusus" in ti.get("ema_trend","") or "bearish" in ti.get("macd_cross","") or ti.get("adx_trend")=="guclu_dusus"
+        if tl: ml+=1; lr.append(f"{lbl} LONG uyumu (+1)")
+        if td: ms+=1; sr.append(f"{lbl} SHORT uyumu (+1)")
+    ls+=ml; ss+=ms
+    dom = "long" if ls>=ss else "short"
+    if dom=="long"  and ms>0 and ml==0: ls=max(0,ls-2); lr.append("TF çelişiyor (-2)")
+    if dom=="short" and ml>0 and ms==0: ss=max(0,ss-2); sr.append("TF çelişiyor (-2)")
+
+    direction = "LONG" if ls>=ss else "SHORT"
+    score = max(ls,ss)
+    return {"direction":direction,"score":score,"long_score":ls,"short_score":ss,
+            "reasons":(lr if direction=="LONG" else sr)}
+
+# ── Ana tarama ────────────────────────────────────────────────────────────────
+
+def scan_all(session="morning"):
+    results = {"strong":[],"moderate":[],"weak":[],"errors":[]}
+    now = datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+    crypto  = get_top50_crypto()
+    bist    = get_bist_symbols()
+    us      = get_sp500_symbols()
+    comm_map= {"XAU/USD":"GC=F","XAG/USD":"SI=F","WTI/USD":"CL=F","BRENT/USD":"BZ=F",
+               "NATGAS":"NG=F","COPPER":"HG=F","XPT/USD":"PL=F",
+               "WHEAT":"ZW=F","CORN":"ZC=F","SOYBEAN":"ZS=F"}
+    total = len(crypto)+len(bist)+len(us)+len(comm_map)
+    print(f"\\n{'='*55}\\n  TRADE ANALIZ — {session.upper()}\\n  {now}\\n  Toplam: {total}\\n{'='*55}\\n")
+
+    def process(sym, market, df_main, df_weekly=None, df_daily=None):
+        ind = calculate_indicators(df_main)
+        if not ind: results["errors"].append(sym); return
+        iw = calculate_indicators(df_weekly)
+        id_ = calculate_indicators(df_daily)
+        sig = score_signal(ind, ind["price"], iw, id_)
+        entry = {"symbol":sym,"market":market,"session":session,"time":now,
+                 "tf_weekly":{"ema_trend":iw.get("ema_trend"),"macd_cross":iw.get("macd_cross"),"adx_trend":iw.get("adx_trend")} if iw else None,
+                 **ind, **sig}
+        bucket = "strong" if sig["score"]>=9 else "moderate" if sig["score"]>=6 else "weak"
+        results[bucket].append(entry)
+        print(f"  {sym:14} {ind['price']:>12}  {sig['score']:2}/17  {sig['direction']}")
+
+    print(f"► Kripto ({len(crypto)})...")
+    for s in crypto:
+        time.sleep(0.5)
+        process(s,"crypto",fetch_binance(s,"4h",250),fetch_binance(s,"1w",100),fetch_binance(s,"1d",100))
+
+    print(f"\\n► BIST ({len(bist)})...")
+    for s in bist:
+        time.sleep(1.0)
+        process(s,"bist",fetch_yahoo(f"{s}.IS","1d",400),fetch_yahoo(f"{s}.IS","1wk",730))
+
+    print(f"\\n► ABD ({len(us)})...")
+    for s in us:
+        time.sleep(1.0)
+        process(s,"us_stock",fetch_yahoo(s,"1d",400),fetch_yahoo(s,"1wk",730))
+
+    print(f"\\n► Emtia ({len(comm_map)})...")
+    for sym,ysym in comm_map.items():
+        time.sleep(1.0)
+        process(sym,"commodity",fetch_yahoo(ysym,"1d",400),fetch_yahoo(ysym,"1wk",730))
+
+    print(f"\\n{'─'*55}")
+    print(f"  Güçlü (9+): {len(results['strong'])}  Orta (6-8): {len(results['moderate'])}  Hata: {len(results['errors'])}")
+    print(f"{'─'*55}\\n")
+
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
+    for suffix in [ts, "latest"]:
+        with open(os.path.join(OUTPUT_DIR,f"trade_scan_{session}_{suffix}.json"),"w",encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+    print(f"Kaydedildi: trade_scan_{session}_{ts}.json")
+    return results
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--session", choices=["morning","evening"], default="morning")
+    ap.add_argument("--symbol")
+    args = ap.parse_args()
+    if args.symbol:
+        print(f"Test: {args.symbol}")
+        df = fetch_binance(args.symbol,"4h",250) if args.symbol.endswith("USDT") else fetch_yahoo(args.symbol,"1d",400)
+        ind = calculate_indicators(df)
+        if ind:
+            sig = score_signal(ind,ind["price"])
+            print(json.dumps({**ind,**sig},ensure_ascii=False,indent=2))
+    else:
+        scan_all(args.session)
+
+
+─── DOSYA 3: scripts/signal_tracker.py ─────────────────────────────────────
+
+DOSYA ADI: signal_tracker.py
+KONUM: trade-analyst/scripts/ klasörü içine
+TAM YOL (Windows): C:\Users\[KULLANICI_ADINIZ]\trade-analyst\scripts\signal_tracker.py
+
+Kaydetmeden önce kullanıcıya söyle:
+"Şimdi signal_tracker.py dosyasını oluşturacağım. Terminale şunu yazın:
+  notepad scripts\signal_tracker.py
+Notepad açıldığında aşağıdaki kodu yapıştırın, Ctrl+S ile kaydedin."
+
+
+"""
+Sinyal takibi — giriş fiyatı, stop-loss, hedef kaydeder,
+her raporda fiyatları güncelleyerek hedef/stop kontrolü yapar.
+"""
+import json, os, time
+from datetime import datetime, timezone
+
+OUTPUT_DIR = os.path.join(os.path.expanduser("~"), "trade-analyst-output")
+DB_PATH = os.path.join(OUTPUT_DIR, "signal_database.json")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+def load_db():
+    if os.path.exists(DB_PATH):
+        with open(DB_PATH, encoding="utf-8") as f: return json.load(f)
+    return {"signals": []}
+
+def save_db(db):
+    with open(DB_PATH, "w", encoding="utf-8") as f:
+        json.dump(db, f, ensure_ascii=False, indent=2)
+
+def fetch_current_price(symbol, market=None):
+    import urllib.request, json as _j, urllib.parse
+    if market=="crypto" or symbol.endswith("USDT"):
+        try:
+            data = _j.loads(urllib.request.urlopen(
+                f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}",timeout=10).read())
+            return float(data["price"])
+        except: pass
+    comm = {"XAU/USD":"GC=F","XAG/USD":"SI=F","WTI/USD":"CL=F","BRENT/USD":"BZ=F",
+            "NATGAS":"NG=F","COPPER":"HG=F","XPT/USD":"PL=F","WHEAT":"ZW=F","CORN":"ZC=F","SOYBEAN":"ZS=F"}
+    ysym = (comm.get(symbol) or (f"{symbol}.IS" if market=="bist" else symbol))
+    try:
+        end = int(time.time()); start = end-7*86400
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(ysym)}?interval=1d&period1={start}&period2={end}"
+        req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
+        data = _j.loads(urllib.request.urlopen(req,timeout=15).read())
+        closes = [c for c in data["chart"]["result"][0]["indicators"]["quote"][0]["close"] if c]
+        return float(closes[-1]) if closes else None
+    except Exception as e:
+        print(f"  [HATA] Fiyat alınamadı {symbol}: {e}"); return None
+
+def save_signals_from_analysis(signals, candidates, session):
+    db = load_db(); now = datetime.now(timezone.utc).isoformat(); added = 0
+    for sig in signals:
+        if any(s["symbol"]==sig.get("symbol") and s["status"]=="open" for s in db["signals"]): continue
+        if not all([sig.get("entry_price"), sig.get("stop_loss"), sig.get("target")]): continue
+        mkt = next((c.get("market","us_stock") for c in candidates if c.get("symbol")==sig.get("symbol")), "us_stock")
+        db["signals"].append({
+            "id": f"{sig['symbol']}_{now[:10]}_{session}",
+            "symbol": sig.get("symbol"), "market": mkt,
+            "direction": sig.get("direction"), "entry_price": sig.get("entry_price"),
+            "stop_loss": sig.get("stop_loss"), "target": sig.get("target"),
+            "score": sig.get("score"), "timeframe": sig.get("timeframe","swing 1-5 gun"),
+            "session": session, "open_date": now[:10], "open_time": now,
+            "current_price": sig.get("entry_price"), "status": "open",
+            "result_pct": None, "close_date": None, "close_reason": None
+        })
+        added += 1; print(f"  + {sig['symbol']} {sig['direction']} kaydedildi")
+    save_db(db); print(f"  {added} yeni sinyal kaydedildi")
+
+def update_positions():
+    db = load_db()
+    open_pos = [s for s in db["signals"] if s["status"]=="open"]
+    if not open_pos: print("Açık pozisyon yok."); return
+    print(f"{len(open_pos)} açık pozisyon kontrol ediliyor...")
+    today = datetime.now(timezone.utc).date()
+    for pos in open_pos:
+        price = fetch_current_price(pos["symbol"], pos.get("market"))
+        if not price: continue
+        pos["current_price"] = price
+        e,sl,tp,d = pos["entry_price"],pos["stop_loss"],pos["target"],pos["direction"]
+        pct = ((price-e)/e*100) if d=="LONG" else ((e-price)/e*100)
+        pos["result_pct"] = round(pct,2)
+        hit_t = (price>=tp if d=="LONG" else price<=tp)
+        hit_s = (price<=sl if d=="LONG" else price>=sl)
+        od = datetime.fromisoformat(pos["open_time"]).date()
+        expired = (today-od).days > 10
+        if hit_t:   pos.update({"status":"hit_target","close_date":today.isoformat(),"close_reason":"Hedef fiyata ulaşıldı"}); print(f"  ✅ {pos['symbol']} HEDEF → %{pct:+.2f}")
+        elif hit_s: pos.update({"status":"hit_stop","close_date":today.isoformat(),"close_reason":"Stop-loss tetiklendi"}); print(f"  ❌ {pos['symbol']} STOP → %{pct:+.2f}")
+        elif expired: pos.update({"status":"expired","close_date":today.isoformat(),"close_reason":"10 gün süre doldu"}); print(f"  ⏱ {pos['symbol']} SÜRE DOLDU → %{pct:+.2f}")
+        else:
+            days=(today-datetime.fromisoformat(pos["open_time"]).date()).days
+            print(f"  📊 {pos['symbol']:12} {d:5} {e}→{price:.4f} %{pct:+.2f} ({days}.gün)")
+        time.sleep(0.3)
+    save_db(db); print(f"Veritabanı güncellendi.")
+
+def get_tracker_html():
+    db = load_db(); signals = db["signals"]
+    if not signals: return ""
+    closed = [s for s in signals if s["status"]!="open"]
+    open_p = [s for s in signals if s["status"]=="open"]
+    winners = [s for s in closed if s["status"]=="hit_target"]
+    losers  = [s for s in closed if s["status"]=="hit_stop"]
+    wr  = round(len(winners)/len(closed)*100,1) if closed else 0
+    aw  = round(sum(s["result_pct"] for s in winners)/len(winners),2) if winners else 0
+    al  = round(sum(s["result_pct"] for s in losers)/len(losers),2) if losers else 0
+
+    def sc(bg,lc,l,vc,v):
+        return f'<td style="padding:4px"><table cellpadding="0" cellspacing="0" border="0" style="background:{bg};border-radius:6px"><tr><td style="padding:8px 14px;text-align:center"><div style="font-size:10px;color:{lc};font-family:Arial">{l}</div><div style="font-size:18px;font-weight:700;color:{vc};font-family:Arial">{v}</div></td></tr></table></td>'
+
+    stats = sc("#f3f4f6","#6b7280","Toplam","#111",len(signals))
+    stats+= sc("#f3f4f6","#6b7280","Açık","#111",len(open_p))
+    stats+= sc("#dcfce7","#166534","Kazanma","#15803d",f"%{wr}")
+    stats+= sc("#dcfce7","#166534","Ort.Kazanç","#15803d",f"%{aw:+.2f}")
+    stats+= sc("#fef2f2","#991b1b","Ort.Kayıp","#dc2626",f"%{al:+.2f}")
+
+    rows=""
+    for pos in sorted(open_p,key=lambda x:x.get("result_pct") or 0,reverse=True):
+        pct=pos.get("result_pct",0) or 0
+        cl="#16a34a" if pct>=0 else "#dc2626"
+        od=pos.get("open_date","")
+        days=(datetime.now(timezone.utc).date()-datetime.fromisoformat(od).date()).days if od else 0
+        dc="#16a34a" if pos["direction"]=="LONG" else "#dc2626"
+        rows+=f'<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:7px 10px;font-weight:600;font-size:12px;font-family:Arial">{pos["symbol"]}</td><td style="padding:7px 10px;color:{dc};font-size:12px;font-family:Arial">{pos["direction"]}</td><td style="padding:7px 10px;font-size:12px;font-family:Arial">{pos["entry_price"]}</td><td style="padding:7px 10px;font-size:12px;font-family:Arial">{pos.get("current_price","-")}</td><td style="padding:7px 10px;color:{cl};font-weight:600;font-size:12px;font-family:Arial">%{pct:+.2f}</td><td style="padding:7px 10px;font-size:12px;color:#6b7280;font-family:Arial">{pos["stop_loss"]}</td><td style="padding:7px 10px;font-size:12px;color:#6b7280;font-family:Arial">{pos["target"]}</td><td style="padding:7px 10px;font-size:12px;color:#6b7280;font-family:Arial">{days}.gün</td></tr>'
+
+    tbl="" if not open_p else f'<div style="font-size:12px;font-weight:700;color:#374151;margin:12px 0 6px;font-family:Arial">Açık Pozisyonlar ({len(open_p)})</div><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:6px"><tr style="background:#f9fafb"><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Sembol</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Yön</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Giriş</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Şimdi</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">K/Z</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Stop</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Hedef</th><th style="padding:7px 10px;text-align:left;font-size:11px;color:#6b7280;font-family:Arial;font-weight:500">Süre</th></tr>{rows}</table>'
+
+    return f'<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;border:1px solid #e5e7eb;border-radius:8px"><tr><td style="padding:16px 20px;background:#fff;border-radius:8px"><div style="font-size:15px;font-weight:700;color:#111;margin-bottom:12px;font-family:Arial">📊 Sinyal Takibi</div><table cellpadding="0" cellspacing="0" border="0"><tr>{stats}</tr></table>{tbl}</td></tr></table>'
+
+if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--update", action="store_true")
+    ap.add_argument("--report", action="store_true")
+    args = ap.parse_args()
+    if args.update: update_positions()
+    if args.report:
+        db = load_db()
+        closed = [s for s in db["signals"] if s["status"]!="open"]
+        open_p = [s for s in db["signals"] if s["status"]=="open"]
+        winners = [s for s in closed if s["status"]=="hit_target"]
+        losers  = [s for s in closed if s["status"]=="hit_stop"]
+        print(f"\\n{'='*50}\\n  PERFORMANS RAPORU\\n{'='*50}")
+        print(f"  Toplam: {len(db['signals'])}  Açık: {len(open_p)}  Tamamlanan: {len(closed)}")
+        if closed:
+            wr=len(winners)/len(closed)*100
+            aw=sum(s['result_pct'] for s in winners)/len(winners) if winners else 0
+            al=sum(s['result_pct'] for s in losers)/len(losers) if losers else 0
+            print(f"  Kazanma: %{wr:.1f}  Ort.Kazanç: %{aw:+.2f}  Ort.Kayıp: %{al:+.2f}")
+            if winners and losers: print(f"  R/R: 1:{abs(aw/al):.2f}")
+        for pos in open_p:
+            pct=pos.get('result_pct',0) or 0
+            print(f"  {'🟢' if pct>=0 else '🔴'} {pos['symbol']:12} {pos['direction']} %{pct:+.2f}")
+
+
+─── DOSYA 4: scripts/analyze_and_report.py ─────────────────────────────────
+
+DOSYA ADI: analyze_and_report.py
+KONUM: trade-analyst/scripts/ klasörü içine
+TAM YOL (Windows): C:\Users\[KULLANICI_ADINIZ]\trade-analyst\scripts\analyze_and_report.py
+
+Kaydetmeden önce kullanıcıya söyle:
+"Şimdi analyze_and_report.py dosyasını oluşturacağım. Terminale şunu yazın:
+  notepad scripts\analyze_and_report.py
+Notepad açıldığında aşağıdaki kodu yapıştırın, Ctrl+S ile kaydedin."
+
+
+Bu dosyayı yazarken SORU B'nin cevabına göre şu satırları ayarla:
+  Agresif: MIN_SCORE_FOR_CLAUDE=6,  MAX_INSTRUMENTS=15
+  Dengeli:  MIN_SCORE_FOR_CLAUDE=8,  MAX_INSTRUMENTS=10
+  Seçici:   MIN_SCORE_FOR_CLAUDE=10, MAX_INSTRUMENTS=5
+
+"""
+Trade Analyst - Claude AI Analizi ve E-posta Raporu
+Kullanım: python analyze_and_report.py --session morning
+"""
+import json, os, sys, argparse, smtplib, time
+from datetime import datetime, timezone
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import anthropic
+
+if sys.stdout.encoding!='utf-8':
+    sys.stdout.reconfigure(encoding='utf-8',errors='replace')
+if sys.stderr.encoding!='utf-8':
+    sys.stderr.reconfigure(encoding='utf-8',errors='replace')
+
+sys.path.append(os.path.dirname(__file__))
+from signal_tracker import save_signals_from_analysis, update_positions, get_tracker_html
+
+OUTPUT_DIR = os.path.join(os.path.expanduser("~"), "trade-analyst-output")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY","")
+GMAIL_USER = os.getenv("GMAIL_USER","")
+GMAIL_PASS = os.getenv("GMAIL_PASS","")
+
+# ── KİŞİSELLEŞTİRME ─────────────────────────────────────────────────────────
+# Kullanıcı tercihine göre SORU B'den belirlenir:
+MIN_SCORE_FOR_CLAUDE = 8   # 6 / 8 / 10
+MAX_INSTRUMENTS      = 10  # 15 / 10 / 5
+INSTRUMENTS_PER_BATCH = 5
+
+SYSTEM_PROMPT = """Sen deneyimli bir teknik analist ve portföy yöneticisisin.
+Swing trade perspektifinden analiz yapıyorsun — günlük bazda fırsatları değerlendiriyorsun.
+
+Her enstrüman için HTML formatında Türkçe analiz yaz:
+
+<div class="instrument" data-direction="[LONG veya SHORT]">
+<div class="inst-header [long veya short]">[SEMBOL] — [LONG/SHORT] — Skor: [X]/17</div>
+<div class="inst-body">
+<div class="inst-row"><span class="inst-label">Genel durum</span><span class="inst-value">[Trend, momentum, sentiment — 1-2 cümle]</span></div>
+<div class="inst-row"><span class="inst-label">Teknik analiz</span><span class="inst-value">[RSI, MACD, EMA, BB, hacim yorumu]</span></div>
+<div class="inst-row"><span class="inst-label">Temel & Sentiment</span><span class="inst-value">[Sektör trendi, piyasa etkisi]</span></div>
+<div class="inst-row"><span class="inst-label">Swing senaryo</span><span class="inst-value">[Giriş bölgesi, beklenen hareket %, süre tahmini]</span></div>
+<div class="inst-row inst-oneri"><span class="inst-label">Öneri</span><span class="inst-value">[AL/SAT/BEKLE] | Giriş: [fiyat] | Stop: [fiyat] | Hedef: [fiyat] | R/R: [oran]</span></div>
+</div>
+</div>
+
+Kurallar: Sadece HTML, Markdown yok. Her div'i kapat. Türkçe yaz.
+Tüm analizlerden sonra şu JSON bloğunu ekle:
+
+```signals
+[{"symbol":"SEMBOL","direction":"LONG","entry_price":0.0,"stop_loss":0.0,"target":0.0,"score":0,"timeframe":"swing 3-7 gun"}]
+```"""
+
+client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+def get_news_summary(session):
+    date_str = datetime.now(timezone.utc).strftime("%d %B %Y")
+    lbl = "sabah" if session=="morning" else "akşam"
+    try:
+        msg = client.messages.create(
+            model="claude-sonnet-4-6", max_tokens=600,
+            tools=[{"type":"web_search_20250305","name":"web_search"}],
+            messages=[{"role":"user","content":
+                f"{date_str} {lbl} — piyasaları etkileyen 3-4 gelişme, Türkçe, 1 cümle her biri. ABD endeksleri, kripto, faiz, emtia."}])
+        return "".join(b.text for b in msg.content if hasattr(b,"text")).strip()
+    except Exception as e:
+        print(f"  [UYARI] Haber özeti alınamadı: {e}"); return ""
+
+def analyze_batch(instruments, session):
+    lbl = "Sabah" if session=="morning" else "Akşam"
+    msg = client.messages.create(
+        model="claude-sonnet-4-6", max_tokens=4000,
+        system=SYSTEM_PROMPT,
+        messages=[{"role":"user","content":
+            f"{lbl} taraması — {len(instruments)} enstrüman:\\n\\n{json.dumps(instruments,ensure_ascii=False,indent=2)}\\n\\nEn güçlü sinyaller önce."}])
+    raw = msg.content[0].text
+    html_part, signals = raw, []
+    if "```signals" in raw:
+        parts = raw.split("```signals")
+        html_part = parts[0].strip()
+        try:
+            js = parts[1].split("```")[0].strip()
+            if not js.rstrip().endswith("]"):
+                lb = js.rfind("}"); js = js[:lb+1]+"\\n]" if lb>0 else js
+            signals = json.loads(js)
+        except Exception as e:
+            print(f"  [UYARI] JSON parse: {e}")
+    return html_part, signals
+
+def analyze_all(scan_results, session):
+    all_c = scan_results.get("strong",[]) + scan_results.get("moderate",[])
+    candidates = sorted(
+        [c for c in all_c if c.get("score",0)>=MIN_SCORE_FOR_CLAUDE],
+        key=lambda x: x.get("score",0), reverse=True
+    )[:MAX_INSTRUMENTS]
+    if not candidates:
+        return {"analyses":[],"summary":"Yeterli sinyal bulunamadı.","news":"","signals":[],"candidates":[]}
+
+    slim = [{
+        "symbol":c["symbol"],"market":c["market"],"price":c["price"],
+        "change_pct":c.get("change_pct"),"direction":c["direction"],"score":c["score"],
+        "rsi":c.get("rsi"),"macd_cross":c.get("macd_cross"),
+        "ema_trend":c.get("ema_trend"),"adx":c.get("adx"),"adx_trend":c.get("adx_trend"),
+        "bb_squeeze":c.get("bb_squeeze"),"vol_ratio":c.get("vol_ratio"),
+        "obv_divergence":c.get("obv_divergence"),
+        "candle_patterns":c.get("candle_patterns",{}),
+        "fib_618":c.get("fib_618"),"support1":c.get("support1"),"resist1":c.get("resist1"),
+        "atr":c.get("atr"),"reasons":c.get("reasons",[]),
+        "tf_weekly":c.get("tf_weekly"),"tf_daily":c.get("tf_daily")
+    } for c in candidates]
+
+    batches = [slim[i:i+INSTRUMENTS_PER_BATCH] for i in range(0,len(slim),INSTRUMENTS_PER_BATCH)]
+    all_analyses, all_signals = [], []
+    print(f"\\n  Claude analizi: {len(candidates)} enstrüman, {len(batches)} batch...")
+    news = get_news_summary(session)
+
+    for i, batch in enumerate(batches,1):
+        if i>1: print("  Rate limit: 65sn bekleniyor..."); time.sleep(65)
+        print(f"  Batch {i}/{len(batches)} ({len(batch)} enstrüman)...")
+        try:
+            h, s = analyze_batch(batch, session)
+            all_analyses.append(h); all_signals.extend(s)
+        except Exception as e:
+            if "rate_limit" in str(e):
+                print("  Rate limit — 70sn bekleyip tekrar..."); time.sleep(70)
+                try: h,s = analyze_batch(batch,session); all_analyses.append(h); all_signals.extend(s)
+                except Exception as e2: all_analyses.append(f"<!-- Batch {i} hata: {e2} -->")
+            else: all_analyses.append(f"<!-- Batch {i} hata: {e} -->")
+
+    try:
+        smsg = client.messages.create(
+            model="claude-sonnet-4-6", max_tokens=400,
+            messages=[{"role":"user","content":
+                f"Bu {len(candidates)} enstrüman analizini 2-3 cümleyle özetle (Türkçe): {[c['symbol'] for c in candidates]}"}])
+        summary = smsg.content[0].text
+    except: summary = f"{len(candidates)} enstrüman analiz edildi."
+
+    return {"analyses":all_analyses,"summary":summary,"news":news,"signals":all_signals,"candidates":candidates}
+
+def build_html(analysis_result, scan_results, session, tracker_html=""):
+    lbl = "☀️ Sabah" if session=="morning" else "🌙 Akşam"
+    now = datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+    candidates = analysis_result.get("candidates",[])
+    all_s = scan_results.get("strong",[])+scan_results.get("moderate",[])
+    strong = len([s for s in all_s if s.get("score",0)>=9])
+    moderate = len([s for s in all_s if 6<=s.get("score",0)<9])
+    total = sum(len(scan_results.get(k,[])) for k in ["strong","moderate","weak","errors"])
+
+    def mc(bg,lc,l,vc,v):
+        return f'<td style="padding:4px"><table cellpadding="0" cellspacing="0" border="0" style="background:{bg};border-radius:6px"><tr><td style="padding:10px 14px;text-align:center"><div style="font-size:10px;color:{lc};text-transform:uppercase;font-family:Arial">{l}</div><div style="font-size:20px;font-weight:700;color:{vc};font-family:Arial">{v}</div></td></tr></table></td>'
+
+    by_mkt={}
+    for c in candidates:
+        m={"crypto":"Kripto","bist":"BIST","us_stock":"ABD","commodity":"Emtia"}.get(c["market"],c["market"])
+        by_mkt.setdefault(m,[]).append(c)
+    pills=""
+    for m,items in by_mkt.items():
+        lo=sum(1 for x in items if x["direction"]=="LONG")
+        sh=sum(1 for x in items if x["direction"]=="SHORT")
+        pills+=f'<td style="padding:4px"><table cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;border-radius:6px"><tr><td style="padding:10px 14px;text-align:center"><div style="font-size:10px;color:#6b7280;font-family:Arial">{m}</div><div style="font-size:20px;font-weight:700;color:#111;font-family:Arial">{len(items)}</div><div style="font-size:11px;font-family:Arial"><span style="color:#16a34a">▲{lo}</span> · <span style="color:#dc2626">▼{sh}</span></div></td></tr></table></td>'
+
+    news_html=""
+    if analysis_result.get("news"):
+        news_html=f'<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;border:1px solid #e5e7eb;border-radius:8px"><tr><td style="padding:16px 20px;background:#fff;border-radius:8px"><div style="font-size:15px;font-weight:700;color:#111;margin-bottom:8px;font-family:Arial">📰 Piyasa Özeti</div><div style="font-size:13px;line-height:1.7;color:#374151;font-family:Arial">{analysis_result["news"].replace(chr(10),"<br>")}</div></td></tr></table>'
+
+    all_html="\\n".join(analysis_result.get("analyses",[]))
+
+    return f'''<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">
+<style>
+body{{margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif}}
+.instrument{{margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb}}
+.inst-header{{padding:12px 16px;font-weight:700;font-size:14px;color:#fff;font-family:Arial}}
+.inst-header.long{{background:#16a34a}}.inst-header.short{{background:#dc2626}}
+.inst-body{{background:#fff;padding:4px 0}}
+.inst-row{{padding:8px 16px;border-bottom:1px solid #f3f4f6;font-size:13px;font-family:Arial}}
+.inst-row:last-child{{border-bottom:none}}
+.inst-label{{color:#374151;font-weight:700;display:inline-block;min-width:120px;vertical-align:top}}
+.inst-value{{color:#111827;line-height:1.5;display:inline-block;vertical-align:top}}
+.inst-oneri .inst-value{{font-weight:600;color:#1e40af}}
+</style></head><body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb">
+<tr><td align="center" style="padding:20px 10px">
+<table width="680" cellpadding="0" cellspacing="0" border="0" style="max-width:680px">
+<tr><td style="background:#1e40af;padding:24px 28px;border-radius:10px 10px 0 0">
+  <div style="font-size:22px;font-weight:700;color:#fff;font-family:Arial">{lbl} Trade Raporu</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px;font-family:Arial">{now}</div>
+</td></tr>
+<tr><td style="background:#fff;padding:24px 28px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+    <tr>{mc("#f3f4f6","#6b7280","Taranan","#111",total)}{mc("#dcfce7","#166534","Güçlü (9+)","#15803d",strong)}{mc("#fef9c3","#854d0e","Orta (6-8)","#a16207",moderate)}{pills}</tr>
+  </table>
+  {tracker_html}
+  {news_html}
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+    <tr><td width="4" style="background:#2563eb;border-radius:4px 0 0 4px">&nbsp;</td>
+    <td style="background:#eff6ff;padding:14px 16px;border-radius:0 8px 8px 0">
+      <div style="font-size:11px;color:#1d4ed8;font-weight:700;margin-bottom:6px;font-family:Arial">GENEL DEĞERLENDİRME</div>
+      <div style="font-size:13px;line-height:1.6;color:#1e3a8a;font-family:Arial">{analysis_result.get("summary","")}</div>
+    </td></tr>
+  </table>
+  <div style="font-size:15px;font-weight:700;color:#111;margin-bottom:12px;font-family:Arial">Detaylı Analizler ({len(candidates)} enstrüman)</div>
+  {all_html}
+</td></tr>
+<tr><td style="text-align:center;padding:16px;font-size:11px;color:#9ca3af;font-family:Arial">
+  Yatırım tavsiyesi değildir. Trade Analyst Sistemi • Claude AI
+</td></tr>
+</table></td></tr></table></body></html>'''
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--session", choices=["morning","evening"], default="morning")
+    args = ap.parse_args()
+
+    scan_path = os.path.join(OUTPUT_DIR, f"trade_scan_{args.session}_latest.json")
+    print(f"Tarama okunuyor: {scan_path}")
+    with open(scan_path, encoding="utf-8") as f:
+        scan_results = json.load(f)
+
+    print("Claude analizi başlatılıyor...")
+    result = analyze_all(scan_results, args.session)
+    candidates = result.get("candidates",[])
+
+    # Sinyalleri kaydet
+    print("\\nSinyaller kaydediliyor...")
+    save_signals_from_analysis(result.get("signals",[]), candidates, args.session)
+
+    # Pozisyonları güncelle
+    print("\\nAçık pozisyonlar güncelleniyor...")
+    update_positions()
+
+    tracker_html = get_tracker_html()
+    html = build_html(result, scan_results, args.session, tracker_html)
+
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
+    rp = os.path.join(OUTPUT_DIR, f"trade_report_{args.session}_{ts}.html")
+    with open(rp,"w",encoding="utf-8") as f: f.write(html)
+    print(f"\\nRapor: {rp}")
+
+    # E-posta
+    all_s = scan_results.get("strong",[])+scan_results.get("moderate",[])
+    strong = len([s for s in all_s if s.get("score",0)>=9])
+    moderate = len([s for s in all_s if 6<=s.get("score",0)<9])
+    date_str = datetime.now(timezone.utc).strftime("%d.%m.%Y")
+    lbl = "Sabah" if args.session=="morning" else "Aksam"
+    subject = f"{lbl} Trade Raporu - {strong} guclu + {moderate} orta sinyal - {date_str}"
+
+    N8N = os.getenv("N8N_WEBHOOK_URL","http://localhost:5678/webhook/trade-report")
+    sent = False
+    try:
+        import urllib.request
+        payload = json.dumps({"subject":subject,"html":html,"session":args.session,"summary":result["summary"]},ensure_ascii=False).encode("utf-8")
+        req = urllib.request.Request(N8N,data=payload,headers={"Content-Type":"application/json"},method="POST")
+        resp = urllib.request.urlopen(req,timeout=30)
+        print(f"Webhook: {resp.status} — E-posta gönderildi!")
+        sent = True
+    except Exception as e:
+        print(f"Webhook hatası: {e}")
+
+    if not sent and GMAIL_USER and GMAIL_PASS:
+        print("Direkt SMTP ile gönderiliyor...")
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"],msg["From"],msg["To"] = subject,GMAIL_USER,GMAIL_USER
+            msg.attach(MIMEText(html,"html","utf-8"))
+            with smtplib.SMTP_SSL("smtp.gmail.com",465) as srv:
+                srv.login(GMAIL_USER,GMAIL_PASS)
+                srv.sendmail(GMAIL_USER,GMAIL_USER,msg.as_string())
+            print("SMTP — E-posta gönderildi!")
+        except Exception as e: print(f"SMTP hatası: {e}")
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOSYA DOĞRULAMA — TÜM DOSYALAR OLUŞTURULDUKTAN SONRA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4 dosyanın da doğru oluşturulduğunu kontrol et.
+Terminalde trade-analyst klasöründeyken şu komutu çalıştır:
+
+Windows:
+  dir scripts\
+
+Mac/Linux:
+  ls -la scripts/
+
+Çıktıda şu 3 dosya görünmeli:
+  fetch_data.py
+  signal_tracker.py
+  analyze_and_report.py
+
+Dosya yoksa veya .txt uzantılıysa (fetch_data.py.txt gibi) doğru
+isimle yeniden kaydet. Tüm dosyalar doğruysa bir sonraki adıma geç.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 7 — BATCH DOSYALARI (SADECE WINDOWS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+morning_scan.bat dosyasını oluştur (C:\\Users\\KULLANICI\\trade-analyst\\ içine):
+
+@echo off
+chcp 65001 >nul
+set PYTHONIOENCODING=utf-8
+set PYTHONUTF8=1
+cd /d C:\\Users\\%USERNAME%\\trade-analyst
+echo [%date% %time%] Sabah taramasi basliyor... >> logs\\morning.log
+py -3.12 scripts\\fetch_data.py --session morning >> logs\\morning.log 2>&1
+py -3.12 scripts\\analyze_and_report.py --session morning >> logs\\morning.log 2>&1
+echo [%date% %time%] Sabah taramasi tamamlandi. >> logs\\morning.log
+
+evening_scan.bat dosyasını oluştur:
+(Aynı şekilde — notepad evening_scan.bat komutuyla açın)
+
+
+@echo off
+chcp 65001 >nul
+set PYTHONIOENCODING=utf-8
+set PYTHONUTF8=1
+cd /d C:\\Users\\%USERNAME%\\trade-analyst
+echo [%date% %time%] Aksam taramasi basliyor... >> logs\\evening.log
+py -3.12 scripts\\fetch_data.py --session evening >> logs\\evening.log 2>&1
+py -3.12 scripts\\analyze_and_report.py --session evening >> logs\\evening.log 2>&1
+echo [%date% %time%] Aksam taramasi tamamlandi. >> logs\\evening.log
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 8 — TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sırayla çalıştır. Her komuttan önce terminalde trade-analyst klasöründe olduğunuzdan emin ol.
+
+Windows'ta klasöre geçmek için:
+  cd C:\Users\%USERNAME%\trade-analyst
+
+Mac/Linux'ta:
+  cd ~/trade-analyst
+
+Sonra her komutu sırayla çalıştır, her birinde çıktıyı kullanıcıdan sor:
+
+1. Tek sembol testi:
+   python scripts/fetch_data.py --symbol BTCUSDT
+
+   Beklenen çıktı: JSON formatında indikatörler ve skor.
+   Hata alırsa: eksik kütüphane veya internet bağlantısı kontrol et.
+
+2. Küçük tarama (sadece kripto):
+   python scripts/fetch_data.py --session morning
+   (BIST ve ABD listeleri boşsa sadece kripto tarar)
+
+3. Tam analiz:
+   python scripts/analyze_and_report.py --session morning
+
+   Beklenen: HTML rapor oluştu + e-posta gönderildi.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 9 — OTOMASYON (TASK SCHEDULER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Windows için adımları ver:
+
+1. Başlat → "Görev Zamanlayıcı" → Temel Görev Oluştur
+2. Ad: "Trade Sabah Tarama"
+3. Tetikleyici: Günlük → Hafta içi (Pzt-Cum) → SORU C'deki sabah saati
+4. Eylem: Program başlat → C:\\Users\\KULLANICI\\trade-analyst\\morning_scan.bat
+5. İleri → "Kullanıcı oturum açmasa bile çalıştır" seç
+6. Aynısını evening_scan.bat için tekrarla
+
+Mac/Linux için:
+crontab -e komutunu çalıştır, şunu ekle (09:00 sabah, 19:00 akşam için):
+0 9 * * 1-5 cd ~/trade-analyst && python scripts/fetch_data.py --session morning >> logs/morning.log 2>&1 && python scripts/analyze_and_report.py --session morning >> logs/morning.log 2>&1
+0 19 * * 1-5 cd ~/trade-analyst && python scripts/fetch_data.py --session evening >> logs/evening.log 2>&1 && python scripts/analyze_and_report.py --session evening >> logs/evening.log 2>&1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 10 — PUANLAMA SİSTEMİ ÖZELLEŞTİRME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kurulum tamamlandıktan sonra kullanıcıya şunu söyle:
+
+"Puanlama sistemini değiştirmek ister misiniz? Örneğin:
+  - 'RSI'ı geri ekle, 35 altı için 2 puan ver'
+  - 'Mum formasyonlarını kaldır, yerine Stochastic RSI ekle'
+  - 'Claude'a daha az/fazla enstrüman gönder'
+  Söyleyin, fetch_data.py ve analyze_and_report.py dosyalarını güncelleyeyim."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HATA ÇÖZÜM REHBERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kullanıcı hata alırsa şu çözümleri uygula:
+
+UnicodeEncodeError:
+  Windows'ta: set PYTHONUTF8=1 && set PYTHONIOENCODING=utf-8 komutunu batch dosyasına ekle
+
+ModuleNotFoundError: anthropic/pandas/pandas_ta:
+  pip install anthropic pandas pandas-ta requests
+
+TA-Lib kurulum hatası:
+  github.com/cgohlke/talib-build/releases → cp312 win_amd64 .whl indir → pip install dosya.whl
+
+Yahoo Finance 404:
+  Sembol .IS uzantısı kontrol et (BIST için AKBNK.IS formatı)
+  Yahoo bazen geçici kapalı — 5 dakika bekle
+
+Rate limit (429) Claude API:
+  INSTRUMENTS_PER_BATCH = 3 yap, batch arası beklemeyi 90 saniyeye çıkar
+  Uzun vadeli çözüm: console.anthropic.com'dan kredi yükle (ilk katman yeterli)
+
+Gmail SMTP hatası:
+  Normal Gmail şifresi değil, App Password kullanılmalı
+  myaccount.google.com → Güvenlik → Uygulama şifreleri
+
+n8n bağlantı hatası:
+  n8n'in açık olduğundan emin ol: terminalde n8n start komutunu çalıştır
+  Rapor her durumda kaydedilir (trade-analyst-output klasöründe)
+  n8n açık değilse sistem otomatik olarak Gmail SMTP ile doğrudan gönderir
+  n8n workflow'unda sorun varsa ilgili adımın ekran görüntüsünü gönder
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+İYİLEŞTİRME ÖNERİLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kurulum tamamlandıktan sonra şu iyileştirmeleri sun:
+
+HEMEN UYGULANABİLİR:
+□ Piyasa filtresi: BTC %5 düşerken kripto LONG sinyallerini baskıla
+□ Hacim filtresi: BIST'te günlük hacmi 1M TL altındaki hisseleri ele
+
+
+ORTA VADEDE:
+□ Stochastic RSI ekle: RSI + StochRSI aynı yöndeyse puan artır
+□ Çoklu piyasa filtresi: VIX yüksekken hisse LONG sinyallerini azalt
+□ Performans raporu: Her hafta sinyal başarı oranını e-postayla gönder
+
+İLERİ SEVİYE:
+□ Backtesting: Geçmiş sinyallerin performans analizi
+
+Bunların herhangi birini uygulamak ister misiniz? Kod yazarım.
+
+
